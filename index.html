@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jade Delight</title>
+</head>
+
+<body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+	
+<script language="javascript">
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost = cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 5.25),
+	new MenuItem("Moo Shi Chicken", 6.5),
+	new MenuItem("Fried Rice", 2.35)
+);
+
+	
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+</script>
+
+<h1>Jade Delight</h1>
+<form name="myForm">
+
+<p>First Name: <input type="text"  name='fname' /></p>
+<p>Last Name*:  <input type="text"  name='lname' /></p>
+<p class="noShow">Street: <input type="text"  name='street' /></p>
+<p class="noShow">City: <input type="text"  name='city' /></p>
+<p>Phone*: <input type="text"  name='phone' /></p>
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery'/>
+	Delivery
+</p>
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script language="javascript">
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr><td>";
+	  s += makeSelect("quan" + i, 0, 10);
+	  s += "</td><td>" + menuItems[i].name + "</td>";
+	  s += "<td> $ " + menuItems[i].cost.toFixed(2) + "</td>";
+	  s += "<td>$<input type='text' name='cost'/></td></tr>";
+  }
+  document.writeln(s);
+</script>
+	
+</table>
+<p>Subtotal: 
+   $<input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p>Mass tax 6.25%:
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p>Total: $ <input type="text"  name='total' id="total" />
+</p>
+	
+<!-- Add onclick reaction  -->
+<input type = "button" value = "Submit Order" onclick="whenClicked()"/>
+
+	
+<!--- my altered code -->
+	
+<div id="thankYou"> &nbsp; </div>
+<div id="time"> &nbsp; </div>
+<div id="orderTotal"> &nbsp; </div>
+<div id="orderStr"> &nbsp; </div>
+
+<script language="javascript">
+
+	$("[name='p_or_d']").change(function(){
+		$("[name='street'],[name='city']").parent().toggleClass("noShow");
+	});
+
+	$("select").change(function(){
+		for (i=0; i< menuItems.length; i++)
+		{
+				quani = "quan" + i;
+				var itemTotal =	$("select[name=" + quani + "] option:selected" ).val();
+
+				itemTotal *= menuItems[i].cost;
+				itemTotal = itemTotal.toFixed(2);
+
+				document.getElementsByTagName("tr")[i+1].getElementsByTagName("td")[3].innerHTML =
+						"<td>$<input type='text' name='cost' value="+(itemTotal)+" /></td></tr>" ;
+
+				var total = 0;
+			
+				currTotal =	$("[name='subtotal']").val();
+			
+					if (currTotal != ""){
+							total = parseFloat(currTotal) + parseFloat(itemTotal);
+					} else {
+						  total = parseFloat(itemTotal);
+					}
+
+				total = total.toFixed(2);
+				$("[name='subtotal']").val(total);
+				tax = total * .0625;
+				tax = tax.toFixed(2);
+				$("[name='tax']").val(tax);
+				total = parseFloat(total) + parseFloat(tax);
+				total = total.toFixed(2);
+				$("[name='total']").val(total);
+
+		}
+
+	});
+
+	function phone_validate(phoneno)
+	{
+		 var regexPattern = new RegExp(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/);    // regular expression pattern
+		 return regexPattern.test(phoneno);
+	}
+
+	function validateForm(){
+
+		valid = true;
+		
+		if ($("[name=lname]").val() == ""){
+			$("[name=lname]").parent().css("color","red");
+			valid = false;
+		} else {
+			$("[name=lname]").parent().css("color","black");
+		}
+
+		if ($("[name=phone]").val() == ""){
+			$("[name=phone]").parent().css("color","red");
+			valid = false;
+		} else {
+			$("[name=phone]").parent().css("color","black");
+		}
+
+		var phoneno = $("[name=phone]").val();
+		
+		if (phone_validate(phoneno)){
+			$("[name=phone]").parent().css("color","black");
+		} else {
+			$("[name=phone]").parent().css("color","red");
+			alert("Error in form: phone number must have 10 digits");
+			valid = false;
+		}
+
+		if (document.getElementsByName('p_or_d')[1].checked){
+			if ($("[name=street]").val() == ""){
+				$("[name=street]").parent().css("color","red");
+				valid = false;
+			} else {
+				$("[name=street]").parent().css("color","black");
+			}
+
+			if ($("[name=city]").val() == ""){
+				$("[name=city]").parent().css("color","red");
+				valid = false;
+			} else {
+				$("[name=city]").parent().css("color","black");
+			}
+		}
+
+		if ($("[name='subtotal']").val() == ""){
+			$("th").css("color","red");
+			valid = false;
+			alert("You must select at least one item to place an order.");
+		} else {
+			$("th").css("color","black");
+		}
+
+		return valid;
+	}
+
+//final function (event based reaction)
+	function whenClicked(){
+		valid = validateForm();
+		if (!valid){
+			alert("Error found in form");
+		} else {
+			document.getElementById("thankYou").innerHTML =	"<br><br> Thank you for ordering from Jade Delight! <br><br>";
+
+			timeEst = 0;
+			var d = new Date();
+			timeEst = d.getHours() % 12;
+
+			// print statement for ETA 
+			if (document.getElementsByName('p_or_d')[1].checked) {
+				min = d.getMinutes() + 30;
+				if (min > 60){
+					timeEst ++;
+					min = min % 60;
+				}
+				timeEst += ":";
+				if(min < 10){
+					timeEst += "0";
+				}
+				timeEst += min;
+				document.getElementById('time').innerHTML =	"<br> Your estimated time of delivery is: " + timeEst + " <br>";
+			} else {
+				min = d.getMinutes() + 15;
+				if (min > 60){
+					timeEst ++;
+					min = min % 60;
+				}
+				timeEst += ":";
+				if(min < 10){
+					timeEst += "0";
+				}
+				timeEst += min;
+				document.getElementById('time').innerHTML =	"<br> Your estimated time for pick up is: " + timeEst + " <br>";
+			}
+			
+			// print out statemnt with Total price amount 	
+			total =	$("[name='total']").val();
+			document.getElementById('orderTotal').innerHTML = "<br> Your total is $" + total + " <br> ";
+
+			orderStr = "<br> Your order: <br>";
+			
+			// list out all the items in the menu 
+			for (i=0; i< menuItems.length; i++) {
+				quani = "quan" + i;
+				quantity = $("select[name=" + quani + "] option:selected" ).val();
+				if (quantity != 0) {
+						orderStr += quantity + " " + menuItems[i].name + "<br>";
+				}
+			}
+
+			document.getElementById('orderStr').innerHTML = orderStr;
+		}
+	}
+
+</script>
+</form>
+</body>
+</html>
